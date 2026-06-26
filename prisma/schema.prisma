@@ -1,0 +1,70 @@
+// Prisma Schema - Sistem Pengelolaan Donasi Panti Asuhan
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("DONATUR") // ADMIN or DONATUR
+  createdAt DateTime @default(now())
+
+  moneyDonations MoneyDonation[]
+}
+
+model Campaign {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  targetAmount  Int
+  currentAmount Int      @default(0)
+  status        String   @default("ACTIVE") // ACTIVE or COMPLETED
+  createdAt     DateTime @default(now())
+
+  moneyDonations MoneyDonation[]
+}
+
+model MoneyDonation {
+  id            String   @id @default(cuid())
+  userId        String?
+  campaignId    String?
+  donorName     String
+  amount        Int
+  paymentMethod String
+  message       String   @default("")
+  status        String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  createdAt     DateTime @default(now())
+
+  user     User?     @relation(fields: [userId], references: [id])
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+}
+
+model ItemDonation {
+  id             String    @id @default(cuid())
+  donorName      String
+  donorPhone     String    @default("")
+  itemName       String
+  quantity       String    @default("1")
+  description    String    @default("")
+  deliveryMethod String    // "Diantar Langsung" or "Kurir"
+  status         String    @default("PENDING") // PENDING or RECEIVED
+  receivedAt     DateTime?
+  createdAt      DateTime  @default(now())
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Int
+  date        DateTime
+  description String
+  createdAt   DateTime @default(now())
+}

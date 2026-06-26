@@ -1,0 +1,17 @@
+.delivery-info {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: var(--primary-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--primary-100);
+}
+
+.delivery-info p {
+  font-size: 0.9rem;
+  color: var(--neutral-700);
+  margin-bottom: 0.25rem;
+}
+
+.delivery-info p:last-child {
+  margin-bottom: 0;
+}
