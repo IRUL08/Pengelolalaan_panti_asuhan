@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import "./page.css";
 
-export default function DonasiUangPage() {
+function DonasiUangForm() {
   const searchParams = useSearchParams();
   const campaignId = searchParams.get("campaign");
 
@@ -244,5 +244,13 @@ export default function DonasiUangPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DonasiUangPage() {
+  return (
+    <Suspense fallback={<div className="container" style={{ padding: "4rem", textAlign: "center" }}>Memuat formulir...</div>}>
+      <DonasiUangForm />
+    </Suspense>
   );
 }
