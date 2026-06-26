@@ -2,6 +2,8 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import "./page.css";
 
+export const dynamic = 'force-dynamic';
+
 function formatRupiah(amount) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
