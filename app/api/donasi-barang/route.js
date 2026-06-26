@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { donorName, donorPhone, itemName, quantity, description, deliveryMethod } = body;
+    const { donorName, donorPhone, itemName, quantity, description, deliveryMethod, imageUrl } = body;
 
     if (!donorName || !itemName || !deliveryMethod) {
       return NextResponse.json(
@@ -21,6 +21,7 @@ export async function POST(request) {
         quantity: quantity || "1",
         description: description || "",
         deliveryMethod,
+        imageUrl: imageUrl || null,
         status: "PENDING",
       },
     });

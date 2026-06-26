@@ -12,7 +12,26 @@ export default function DonasiBarangPage() {
     quantity: "",
     description: "",
     deliveryMethod: "Diantar Langsung",
+    imageUrl: "",
   });
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Ukuran file maksimal 2MB");
+        e.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, imageUrl: reader.result });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFormData({ ...formData, imageUrl: "" });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +51,7 @@ export default function DonasiBarangPage() {
           quantity: "",
           description: "",
           deliveryMethod: "Diantar Langsung",
+          imageUrl: "",
         });
       }
     } catch {
@@ -138,6 +158,24 @@ export default function DonasiBarangPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 ></textarea>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="image">Foto Barang (Opsional)</label>
+                <input
+                  type="file" id="image" className="form-input"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                {formData.imageUrl && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <img
+                      src={formData.imageUrl}
+                      alt="Preview"
+                      style={{ maxHeight: '200px', borderRadius: '8px', objectFit: 'cover', width: '100%' }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

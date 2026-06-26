@@ -93,6 +93,12 @@ function Dashboard({ admin, onLogout }) {
   });
   const [expenseLoading, setExpenseLoading] = useState(false);
 
+  // Gallery form
+  const [galleryForm, setGalleryForm] = useState({
+    title: "", description: "", imageUrl: "", date: "",
+  });
+  const [galleryLoading, setGalleryLoading] = useState(false);
+
   const fetchData = async () => {
     try {
       const res = await fetch("/api/admin/dashboard");
@@ -117,6 +123,67 @@ function Dashboard({ admin, onLogout }) {
       fetchData();
     } catch {
       alert("Gagal update status");
+    }
+  };
+
+  const deleteDonation = async (id, type) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus data donasi ini secara permanen?")) return;
+    try {
+      const res = await fetch("/api/admin/delete-donation", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, type }),
+      });
+      if (res.ok) {
+        fetchData();
+        alert("Data berhasil dihapus!");
+      } else {
+        alert("Gagal menghapus data");
+      }
+    } catch {
+      alert("Gagal menghapus data");
+    }
+  };
+
+  const deleteGallery = async (id) => {
+    if (!confirm("Hapus foto kegiatan ini?")) return;
+    try {
+      const res = await fetch("/api/admin/gallery", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        fetchData();
+      } else {
+        alert("Gagal menghapus");
+      }
+    } catch {
+      alert("Gagal menghapus");
+    }
+  };
+
+  const handleGallerySubmit = async (e) => {
+    e.preventDefault();
+    setGalleryLoading(true);
+    try {
+      const res = await fetch("/api/admin/gallery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(galleryForm),
+      });
+      if (res.ok) {
+        setGalleryForm({ title: "", description: "", imageUrl: "", date: "" });
+        fetchData();
+        alert("Foto kegiatan berhasil ditambahkan!");
+      } else {
+        const d = await res.json();
+        alert(d.error || "Gagal menyimpan foto");
+      }
+    } catch {
+      alert("Gagal menyimpan foto");
+    } finally {
+      setGalleryLoading(false);
     }
   };
 
@@ -156,6 +223,7 @@ function Dashboard({ admin, onLogout }) {
     { id: "money", label: "💰 Donasi Uang", icon: "💰" },
     { id: "items", label: "📦 Donasi Barang", icon: "📦" },
     { id: "expenses", label: "📤 Pengeluaran", icon: "📤" },
+    { id: "gallery", label: "📸 Galeri", icon: "📸" },
   ];
 
   return (
@@ -238,12 +306,15 @@ function Dashboard({ admin, onLogout }) {
                           </span>
                         </td>
                         <td>
-                          {d.status === "PENDING" && (
-                            <div className="action-btns">
-                              <button className="btn btn-success btn-sm" onClick={() => updateStatus(d.id, "SUCCESS", "money")}>✓</button>
-                              <button className="btn btn-danger btn-sm" onClick={() => updateStatus(d.id, "FAILED", "money")}>✗</button>
-                            </div>
-                          )}
+                          <div className="action-btns">
+                            {d.status === "PENDING" && (
+                              <>
+                                <button className="btn btn-success btn-sm" onClick={() => updateStatus(d.id, "SUCCESS", "money")} title="Terima">✓</button>
+                                <button className="btn btn-warning btn-sm" onClick={() => updateStatus(d.id, "FAILED", "money")} title="Tolak">✗</button>
+                              </>
+                            )}
+                            <button className="btn btn-danger btn-sm" onClick={() => deleteDonation(d.id, "money")} title="Hapus">🗑️</button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -279,12 +350,15 @@ function Dashboard({ admin, onLogout }) {
                         </span>
                       </td>
                       <td>
-                        {d.status === "PENDING" && (
-                          <div className="action-btns">
-                            <button className="btn btn-success btn-sm" onClick={() => updateStatus(d.id, "SUCCESS", "money")}>✓ Terima</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => updateStatus(d.id, "FAILED", "money")}>✗ Tolak</button>
-                          </div>
-                        )}
+                        <div className="action-btns">
+                          {d.status === "PENDING" && (
+                            <>
+                              <button className="btn btn-success btn-sm" onClick={() => updateStatus(d.id, "SUCCESS", "money")}>✓ Terima</button>
+                              <button className="btn btn-warning btn-sm" onClick={() => updateStatus(d.id, "FAILED", "money")}>✗ Tolak</button>
+                            </>
+                          )}
+                          <button className="btn btn-danger btn-sm" onClick={() => deleteDonation(d.id, "money")}>🗑️ Hapus</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -302,7 +376,7 @@ function Dashboard({ admin, onLogout }) {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Tanggal</th><th>Donatur</th><th>Barang</th><th>Jumlah</th><th>Pengiriman</th><th>Status</th><th>Aksi</th>
+                    <th>Tanggal</th><th>Donatur</th><th>Foto</th><th>Barang</th><th>Jumlah</th><th>Pengiriman</th><th>Status</th><th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -310,6 +384,13 @@ function Dashboard({ admin, onLogout }) {
                     <tr key={d.id}>
                       <td>{formatDate(d.createdAt)}</td>
                       <td><strong>{d.donorName}</strong></td>
+                      <td>
+                        {d.imageUrl ? (
+                          <img src={d.imageUrl} alt="Foto Barang" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
+                        ) : (
+                          <span style={{ color: '#999', fontSize: '0.85em' }}>Tidak ada foto</span>
+                        )}
+                      </td>
                       <td>{d.itemName}</td>
                       <td>{d.quantity}</td>
                       <td>{d.deliveryMethod}</td>
@@ -319,11 +400,16 @@ function Dashboard({ admin, onLogout }) {
                         </span>
                       </td>
                       <td>
-                        {d.status === "PENDING" && (
-                          <button className="btn btn-success btn-sm" onClick={() => updateStatus(d.id, "RECEIVED", "item")}>
-                            ✓ Terima
+                        <div className="action-btns">
+                          {d.status === "PENDING" && (
+                            <button className="btn btn-success btn-sm" onClick={() => updateStatus(d.id, "RECEIVED", "item")}>
+                              ✓ Terima
+                            </button>
+                          )}
+                          <button className="btn btn-danger btn-sm" onClick={() => deleteDonation(d.id, "item")}>
+                            🗑️ Hapus
                           </button>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -376,6 +462,79 @@ function Dashboard({ admin, onLogout }) {
                   {expenseLoading ? "Menyimpan..." : "💾 Simpan Pengeluaran"}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Gallery Tab */}
+        {activeTab === "gallery" && (
+          <div className="tab-content animate-fade-in">
+            <h3>📸 Tambah Foto Kegiatan Baru</h3>
+            <div className="form-card expense-form-card">
+              <form onSubmit={handleGallerySubmit} id="gallery-form">
+                <div className="expense-form-grid">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="gallery-title">Judul Kegiatan</label>
+                    <input type="text" id="gallery-title" className="form-input"
+                      placeholder="Contoh: Buka Puasa Bersama"
+                      value={galleryForm.title}
+                      onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
+                      required />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="gallery-url">URL Gambar (Link)</label>
+                    <input type="url" id="gallery-url" className="form-input"
+                      placeholder="https://..."
+                      value={galleryForm.imageUrl}
+                      onChange={(e) => setGalleryForm({ ...galleryForm, imageUrl: e.target.value })}
+                      required />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="gallery-date">Tanggal Kegiatan</label>
+                    <input type="date" id="gallery-date" className="form-input"
+                      value={galleryForm.date}
+                      onChange={(e) => setGalleryForm({ ...galleryForm, date: e.target.value })}
+                      required />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="gallery-desc">Deskripsi</label>
+                  <textarea id="gallery-desc" className="form-textarea" rows={2}
+                    placeholder="Ceritakan sedikit tentang kegiatan ini..."
+                    value={galleryForm.description}
+                    onChange={(e) => setGalleryForm({ ...galleryForm, description: e.target.value })}
+                  ></textarea>
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={galleryLoading}>
+                  {galleryLoading ? "Menyimpan..." : "💾 Simpan ke Galeri"}
+                </button>
+              </form>
+            </div>
+
+            <h3 style={{ marginTop: "2rem" }}>📋 Daftar Galeri</h3>
+            <div className="table-container">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Gambar</th><th>Tanggal</th><th>Judul</th><th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.gallery?.map((d) => (
+                    <tr key={d.id}>
+                      <td><img src={d.imageUrl} alt={d.title} style={{ width: "80px", height: "50px", objectFit: "cover", borderRadius: "4px" }} /></td>
+                      <td>{formatDate(d.date)}</td>
+                      <td><strong>{d.title}</strong><br/><small style={{ color: "#666" }}>{d.description}</small></td>
+                      <td>
+                        <button className="btn btn-danger btn-sm" onClick={() => deleteGallery(d.id)}>🗑️ Hapus</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!data.gallery || data.gallery.length === 0) && (
+                     <tr><td colSpan="4" style={{ textAlign: "center", padding: "1rem" }}>Belum ada foto kegiatan</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

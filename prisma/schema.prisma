@@ -55,6 +55,7 @@ model ItemDonation {
   quantity       String    @default("1")
   description    String    @default("")
   deliveryMethod String    // "Diantar Langsung" or "Kurir"
+  imageUrl       String?
   status         String    @default("PENDING") // PENDING or RECEIVED
   receivedAt     DateTime?
   createdAt      DateTime  @default(now())
@@ -66,5 +67,14 @@ model Expense {
   amount      Int
   date        DateTime
   description String
+  createdAt   DateTime @default(now())
+}
+
+model Gallery {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String
+  date        DateTime @default(now())
   createdAt   DateTime @default(now())
 }

@@ -15,6 +15,7 @@ export async function GET() {
       pendingMoneyDonations,
       pendingItemDonations,
       campaigns,
+      galleryData,
     ] = await Promise.all([
       prisma.moneyDonation.count(),
       prisma.itemDonation.count(),
@@ -37,6 +38,7 @@ export async function GET() {
       prisma.moneyDonation.count({ where: { status: "PENDING" } }),
       prisma.itemDonation.count({ where: { status: "PENDING" } }),
       prisma.campaign.findMany({ orderBy: { createdAt: "desc" } }),
+      prisma.gallery.findMany({ orderBy: { date: "desc" } }),
     ]);
 
     return NextResponse.json({
@@ -53,6 +55,7 @@ export async function GET() {
       recentMoneyDonations,
       recentItemDonations,
       campaigns,
+      gallery: galleryData,
     });
   } catch (error) {
     console.error("Dashboard error:", error);

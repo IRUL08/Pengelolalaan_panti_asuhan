@@ -10,6 +10,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/", label: "Beranda" },
+    { href: "/galeri", label: "Galeri" },
     { href: "/donasi-uang", label: "Donasi Uang" },
     { href: "/donasi-barang", label: "Donasi Barang" },
     { href: "/transparansi", label: "Transparansi" },
